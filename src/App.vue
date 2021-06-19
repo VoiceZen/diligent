@@ -4,9 +4,7 @@
       <v-toolbar-title>Diligent</v-toolbar-title>
     </v-app-bar>
     <v-main>
-      <div class="pa-4">
-        <router-view />
-      </div>
+      <router-view />
     </v-main>
     <v-navigation-drawer clipped app width="300" fixed class="tasks-panel">
       <v-list flat>

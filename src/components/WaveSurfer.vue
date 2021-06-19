@@ -9,6 +9,8 @@ import WaveSurfer from "wavesurfer.js";
 export default Vue.extend({
   name: "WaveSurfer",
   props: {
+    // All the options that WaveSurfer supports.
+    // Check https://wavesurfer-js.org/docs/options.html
     options: {
       type: Object,
       required: true,
@@ -18,6 +20,9 @@ export default Vue.extend({
     return { instance: null, loading: false };
   },
   mounted() {
+    // We want wavesurfer to find the div that THIS component
+    // creates and then attach to it. Giving a class or id will
+    // create problems when there are multiple instances together.
     const el = this.$el;
     this.instance = WaveSurfer.create({
       container: el,
@@ -27,17 +32,21 @@ export default Vue.extend({
     this.instance.load(this.options.file);
   },
   beforeDestroy() {
+    // Destroy all the stuff created by wavesurfer
     this.instance.destroy();
   },
+  computed: {
+    isPlaying() {
+      return this.instance?.isPlaying() ?? false;
+    },
+  },
   methods: {
+    /**
+     * Sends current loading status back to parent component.
+     * This will be available in parent via :loading.sync="parentVariable".
+     */
     syncLoadingStatus() {
       this.$emit("update:loading", this.loading);
-    },
-    play() {
-      this.instance.play();
-    },
-    pause() {
-      this.instance.pause();
     },
     attachHandlers() {
       this.instance.on("loading", () => {
@@ -54,13 +63,26 @@ export default Vue.extend({
         this.loading = false;
         this.syncLoadingStatus();
       });
+      this.instance.on("play", () => {
+        this.$emit("update:playing", true);
+      });
+      this.instance.on("pause", () => {
+        this.$emit("update:playing", false);
+      });
+    },
+    // Convenience methods so the parent doesn't have to
+    // get hold of the wavesurfer instance for normal
+    // use cases. For advanced usage, the consumer of this
+    // component is encouraged to use the instance itself.
+    play(start, end) {
+      this.instance.play(start, end);
+    },
+    pause() {
+      this.instance.pause();
+    },
+    playPause() {
+      this.instance.playPause();
     },
   },
 });
 </script>
-
-<style scoped>
-.wavesurfer-vue {
-  position: relative;
-}
-</style>
